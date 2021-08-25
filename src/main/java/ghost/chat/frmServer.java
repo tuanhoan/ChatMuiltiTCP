@@ -10,8 +10,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.ArrayList; 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane; 
@@ -23,6 +22,7 @@ import javax.swing.JOptionPane;
 public class frmServer extends javax.swing.JFrame { 
     public static ArrayList<Socket> listSK;
     private boolean isConnect;
+    private String key;
     /**
      * Creates new form frmChatServer
      */
@@ -82,26 +82,23 @@ public class frmServer extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(140, 140, 140)
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnSend, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(44, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jSeparator1)
                         .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(130, 130, 130)
+                        .addComponent(jLabel1)
+                        .addContainerGap(375, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtMessage)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnSend, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel2)
@@ -139,12 +136,12 @@ public class frmServer extends javax.swing.JFrame {
     private void btnListenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListenActionPerformed
         // TODO add your handling code here: 
         Thread th =  new Thread(){
+            @Override
             public void run(){
                 try {
                     int port = Integer.parseInt(txtPort.getText());
-                    ServerSocket server = new ServerSocket(port);
-                    //WriteServer write = new WriteServer();
-                    //write.start();
+                    key = Ultils.getMd5(Integer.toString(port));
+                    ServerSocket server = new ServerSocket(port); 
                     txpMessage.setText(txpMessage.getText()+"\nListening...");
                     while(true){
                         Socket socket = server.accept();
@@ -154,7 +151,7 @@ public class frmServer extends javax.swing.JFrame {
                         ReadServer read = new ReadServer(socket);
                         read.start();
                      }
-            } catch (Exception e) {
+            } catch (IOException | NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
         }
             }
@@ -175,11 +172,10 @@ public class frmServer extends javax.swing.JFrame {
                 try {
                     for(Socket item: listSK){
                         dos = new DataOutputStream(item.getOutputStream());
-                        dos.writeUTF("Server: " +sms);
+                        dos.writeUTF("Server: " +sms + Ultils.SoLanXuatHien(sms));
                     }
                     txpMessage.setText(txpMessage.getText() + "\n" + "Server: " +sms);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (IOException e) {
             } 
             //mSocket.send(txtMessage.getText());
         } catch (Exception ex) {
@@ -220,6 +216,7 @@ public class frmServer extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 listSK = new ArrayList<>();
                 new frmServer().setVisible(true);
@@ -238,6 +235,7 @@ class ReadServer extends  Thread{
             dis = new DataInputStream(socket.getInputStream());
             while(true){
                 String sms  = dis.readUTF();   
+                sms = new AES().deAES(sms, key);
                 if(sms.equals("exit")){
                     listSK.remove(socket);
                     txpMessage.setText(txpMessage.getText()+ "\nĐã ngắt kết nối" + socket);
@@ -250,12 +248,12 @@ class ReadServer extends  Thread{
                     if(item.getPort() != socket.getPort()){ 
                         DataOutputStream dos = new DataOutputStream(item.getOutputStream()); 
                         System.out.println("tn:" + sms);
-                        dos.writeUTF(sms);
+                        dos.writeUTF(sms + Ultils.SoLanXuatHien(sms.split(":")[1]));
                     }
                 }  
                 txpMessage.setText(txpMessage.getText()+"\n" + sms);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             try {
                 dis.close();
                 socket.close();

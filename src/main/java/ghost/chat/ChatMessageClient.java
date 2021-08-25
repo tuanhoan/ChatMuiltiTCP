@@ -43,9 +43,10 @@ public class ChatMessageClient {
         };
         th.start();
     }
-    public void send(String msg) throws IOException{
+    public void send(String msg, String key) throws IOException{
         String current = txtMessageBoard.getText();
         txtMessageBoard.setText(current + "\n" +  msg);
+        msg = new AES().enAES(msg, key); 
         out.writeUTF(msg); 
     }
     public void close(){

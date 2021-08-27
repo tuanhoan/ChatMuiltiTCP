@@ -52,6 +52,11 @@ public class frmChatClient extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 3, 14)); // NOI18N
         jLabel1.setText("Chat Client");
@@ -198,6 +203,15 @@ public class frmChatClient extends javax.swing.JFrame {
         }
         txtMessage.setText("");
     }//GEN-LAST:event_btnSendActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+         try {
+                mSocket.send("exit",key);
+            } catch (IOException ex) {
+                Logger.getLogger(frmChatClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments

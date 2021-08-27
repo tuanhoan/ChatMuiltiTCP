@@ -41,7 +41,7 @@ public class Ultils {
         return kq;
     }
     public static String removeAccent(String s) { 
-        String temp = Normalizer.normalize(s, Normalizer.Form.NFD); 
+        String temp = Normalizer.normalize(s.toLowerCase(), Normalizer.Form.NFD); 
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+"); 
         temp = pattern.matcher(temp).replaceAll(""); 
         return temp.replaceAll("đ", "d"); 

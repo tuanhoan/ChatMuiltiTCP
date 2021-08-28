@@ -135,7 +135,11 @@ public class frmServer extends javax.swing.JFrame {
 
     private void btnListenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListenActionPerformed
         // TODO add your handling code here: 
-        Thread th =  new Thread(){
+        if(txtPort==null){
+            JOptionPane.showMessageDialog(null, "Không được để trống");
+        }
+        else{
+             Thread th =  new Thread(){
             @Override
             public void run(){
                 try {
@@ -144,30 +148,29 @@ public class frmServer extends javax.swing.JFrame {
                     ServerSocket server = new ServerSocket(port); 
                     txpMessage.setText(txpMessage.getText()+"\nListening...");
                     while(true){
-                        Socket socket = server.accept();
-                        txpMessage.setText(txpMessage.getText()+"\nĐã kết nối với " + socket);
-                        System.out.println("Đã kết nối với " + socket);
+                        Socket socket = server.accept(); //Chờ client kết nối
+                        txpMessage.setText(txpMessage.getText()+"\nĐã kết nối với " + socket); 
                         listSK.add(socket);
                         ReadServer read = new ReadServer(socket);
                         read.start();
                      }
-            } catch (IOException | NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
-        }
+                } catch (IOException | NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
             }
-        };
-        th.start();
-        btnListen.setText("Listenning");
-        btnListen.setEnabled(false);  
+                }
+            };
+            th.start();
+            txtPort.setEnabled(false);
+            btnListen.setText("Listenning");
+            btnListen.setEnabled(false);  
+        }
     }//GEN-LAST:event_btnListenActionPerformed
 
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed
         // TODO add your handling code here:
         String sms = txtMessage.getText();
-        if(sms.equals("")){
-            return;
-        }
-        try {
+        if(!sms.isEmpty()){
+            try {
             DataOutputStream dos = null;    
                 try {
                     for(Socket item: listSK){
@@ -176,12 +179,13 @@ public class frmServer extends javax.swing.JFrame {
                     }
                     txpMessage.setText(txpMessage.getText() + "\n" + "Server: " +sms);
                 } catch (IOException e) {
-            } 
-            //mSocket.send(txtMessage.getText());
-        } catch (Exception ex) {
-            Logger.getLogger(frmServer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        txtMessage.setText("");
+                } 
+                //mSocket.send(txtMessage.getText());
+            } catch (Exception ex) {
+                Logger.getLogger(frmServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            txtMessage.setText("");
+        } 
     }//GEN-LAST:event_btnSendActionPerformed
 
     /**
@@ -234,24 +238,23 @@ class ReadServer extends  Thread{
         try {
             dis = new DataInputStream(socket.getInputStream());
             while(true){
-                String sms  = dis.readUTF();   
-                sms = new AES().deAES(sms, key);
+                String chuoiNhanTuClient  = dis.readUTF();   //Đọc tin nhắn client
+                String sms = chuoiNhanTuClient;
+                sms = new AES().deAES(sms, key); //Giải mã AES
                 if(sms.equals("exit")){
                     listSK.remove(socket);
-                    txpMessage.setText(txpMessage.getText()+ "\nĐã ngắt kết nối" + socket);
-                    System.out.println("Đã ngắt kết nối với socket");
+                    txpMessage.setText(txpMessage.getText()+ "\nĐã ngắt kết nối" + socket); 
                     dis.close();
                     socket.close(); 
                     continue; //Ngắt kết nối
                 }
                 for(Socket item: listSK){
-                    if(item.getPort() != socket.getPort()){ 
-                        DataOutputStream dos = new DataOutputStream(item.getOutputStream()); 
-                        System.out.println("tn:" + sms);
+                    //if(item.getPort() != socket.getPort()){ 
+                        DataOutputStream dos = new DataOutputStream(item.getOutputStream());  
                         dos.writeUTF(sms + Ultils.SoLanXuatHien(sms.split(":")[1]));
-                    }
+                    //}
                 }  
-                txpMessage.setText(txpMessage.getText()+"\n" + sms);
+                txpMessage.setText(txpMessage.getText()+"\n" + sms+"("+chuoiNhanTuClient+")");
             }
         } catch (IOException e) {
             try {

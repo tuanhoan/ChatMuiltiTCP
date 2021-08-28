@@ -27,12 +27,12 @@ public class ChatMessageClient {
         reader = new DataInputStream(socket.getInputStream());
         received();
     }
-    private void received(){
+    private void received(){ 
         Thread th = new Thread(){
             public void run(){
                 while(true){
                     try {
-                        String line = reader.readUTF();
+                        String line = reader.readUTF(); //Nhận tin nhắn từ server
                         if(line!=null){
                             txtMessageBoard.setText(txtMessageBoard.getText()+"\n" + line);
                         }
@@ -44,10 +44,10 @@ public class ChatMessageClient {
         th.start();
     }
     public void send(String msg, String key) throws IOException{
-        String current = txtMessageBoard.getText();
-        txtMessageBoard.setText(current + "\n" +  msg);
-        msg = new AES().enAES(msg, key); 
-        out.writeUTF(msg); 
+        //String current = txtMessageBoard.getText();
+        //txtMessageBoard.setText(current + "\n" +  msg);
+        msg = new AES().enAES(msg, key);  //Mã hóa tin nhắn bằng AES
+        out.writeUTF(msg);  //Gửi lên server
     }
     public void close(){
         try {

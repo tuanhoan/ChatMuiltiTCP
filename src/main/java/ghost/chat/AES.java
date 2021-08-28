@@ -23,24 +23,26 @@ import javax.crypto.spec.SecretKeySpec;
  * @author tuanHoan
  */
 public class AES {
-   public SecretKey getAESKeyFromPort(String port){
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] key = port.getBytes("UTF-8");
-            key = md5.digest(key);
-            return new SecretKeySpec(key, "AES");
-        } catch (Exception e) {
-        }
-        return null;
-    }
+//   public SecretKey getAESKeyFromPort(String port){
+//        try {
+//            MessageDigest md5 = MessageDigest.getInstance("MD5");
+//            byte[] key = port.getBytes("UTF-8");
+//            key = md5.digest(key);
+//            return new SecretKeySpec(key, "AES");
+//        } catch (Exception e) {
+//        }
+//        return null;
+//    }
     
-    public String enAES(String msg, String port){
+    public String enAES(String msg, String key){
         try {
-            SecretKey secretKey = getAESKeyFromPort(port);
+            SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
+           // SecretKey secretKey = getAESKeyFromPort(key);
 //            System.out.println(secretKey);
 //            System.out.println(port);
             Cipher aesCipher = Cipher.getInstance("AES");
             aesCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+             
             
             return Base64.getEncoder().encodeToString(aesCipher.doFinal(msg.getBytes("UTF-8")));
         } catch (UnsupportedEncodingException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
@@ -48,9 +50,9 @@ public class AES {
         return null;
     }
     
-    public String deAES(String cipher, String port){
+    public String deAES(String cipher, String key){
         try {
-            SecretKey secretKey = getAESKeyFromPort(port);
+            SecretKey secretKey = new SecretKeySpec(key.getBytes(), "AES");
 //            System.out.println(secretKey);
 //            System.out.println(port);
             Cipher aesCipher = Cipher.getInstance("AES");

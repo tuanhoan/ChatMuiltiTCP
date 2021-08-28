@@ -177,14 +177,18 @@ public class frmChatClient extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(this, e.getMessage());
                 }
                 btnConnect.setText("Disconnect");
-                txtName.setEditable(false);
+                txtName.setEnabled(false);
+                txtHost.setEnabled(false);
+                txtPort.setEnabled(false);
                 btnSend.setEnabled(true);
                 isConnect=!isConnect;
             } 
         } else{ 
             btnConnect.setText("Connect");
-            txtName.setEditable(true);
+            txtName.setEnabled(true);
             isConnect = !isConnect;
+            txtHost.setEnabled(true);
+            txtPort.setEnabled(true);
             btnSend.setEnabled(false);
             try {
                 mSocket.send("exit",key);
@@ -197,7 +201,9 @@ public class frmChatClient extends javax.swing.JFrame {
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed
         try {
             // TODO add your handling code here:
-            mSocket.send(txtName.getText() +": "+ txtMessage.getText(),key);
+            if(!txtMessage.getText().isEmpty()){
+                 mSocket.send(txtName.getText() +": "+ txtMessage.getText(),key);
+            } 
         } catch (IOException ex) {
             Logger.getLogger(frmChatClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -207,10 +213,10 @@ public class frmChatClient extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
          try {
-                mSocket.send("exit",key);
-            } catch (IOException ex) {
-                Logger.getLogger(frmChatClient.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            mSocket.send("exit",key);
+        } catch (IOException ex) {
+            Logger.getLogger(frmChatClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_formWindowClosing
 
     /**
